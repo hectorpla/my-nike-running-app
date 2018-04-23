@@ -15,6 +15,6 @@ public class Leg {
     private double heading;
 
     public Leg() {
-        
+
     }
 }

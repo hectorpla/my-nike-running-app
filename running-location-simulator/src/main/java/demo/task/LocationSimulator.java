@@ -1,8 +1,7 @@
 package demo.task;
 
-import sun.jvm.hotspot.runtime.Thread;
+import demo.model.*;
 
-import javax.swing.text.Position;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,9 +23,10 @@ public class LocationSimulator implements Runnable {
     private PositionInfo positionInfo;
 
     private List<Leg> legs;
-    private RunerStatus runnerStatus = RunnerStatus.NONE;
+    private RunnerStatus runnerStatus = RunnerStatus.NONE;
+    private String  runningId;
 
-    private Position startPoint;
+    private Point startPoint;
     private Date executionStartTime;
 
     private MedicalInfo medicalInfo;
@@ -35,7 +35,14 @@ public class LocationSimulator implements Runnable {
 
     public LocationSimulator(GpsSimulatorRequest gpsSimulatorRequest) {
         this.shouldMove = gpsSimulatorRequest.isMove();
-        this.exportPositionsToMessaging = gpsSimulatorRequest.is
+        this.exportPositionsToMessaging = gpsSimulatorRequest.isExportPositionsToMessaging();
+        this.setSpeed(gpsSimulatorRequest.getSpeed());
+        this.reportInterval = gpsSimulatorRequest.getReportInterval();
+
+        this.runningId = gpsSimulatorRequest.getRunningId();
+        this.runnerStatus = gpsSimulatorRequest.getRunnerStatus();
+        this.medicalInfo = gpsSimulatorRequest.getMedicalInfo();
+
     }
 
     public void setSpeed(double speed) {
@@ -53,7 +60,42 @@ public class LocationSimulator implements Runnable {
 
            while (!Thread.interrupted()) {
                long startTime = new Date().getTime();
-               sleep(startTime);
+
+               if (shouldMove) {
+                    moveRunningLocation();
+                    currentPosition.setSpeed(speedInMps);
+               } else {
+                   currentPosition.setSpeed(0.0);
+               }
+
+               currentPosition.setRunnerStatus(runnerStatus);
+
+               final MedicalInfo medicalInfoToUse;
+
+               switch (runnerStatus) {
+                   case STOP_NOW:
+                   case SUPPLY_SOON:
+                   case SUPPLY_NOW:
+                       medicalInfoToUse = medicalInfo;
+                       break;
+                   default:
+                       medicalInfoToUse = null;
+                       break;
+               }
+
+               final CurrentPosition currentPosition =
+                       new CurrentPosition(this.currentPosition.getRunningId(),
+                               new Point(this.currentPosition.getPosition().getLatitude(),
+                                       this.currentPosition.getPosition().getLongitude()),
+                               this.currentPosition.getRunnerStatus(),
+                               this.currentPosition.getSpeed(),
+                               this.currentPosition.getLeg().getHeading(),
+                               medicalInfoToUse);
+
+               // send current position to distribution service vis REST API
+               // @TODO: implement PositionInfo service
+
+               this.sleep(startTime);
            }
         } catch (InterruptedException e) {
             destroy();
@@ -66,7 +108,7 @@ public class LocationSimulator implements Runnable {
         currentPosition = null;
     }
 
-    void sleep(long startTime) {
+    void sleep(long startTime) throws InterruptedException {
         long endTime = new Date().getTime();
         long elapsedTime = endTime - startTime;
         long sleepTime = reportInterval - elapsedTime > 0 ? reportInterval : 0;
@@ -78,14 +120,17 @@ public class LocationSimulator implements Runnable {
         double distanceFromStart = currentPosition.getDistanceFromStart() + distance;
         double excess = 0.0;
 
-        for (int i = currentPosition.getLeg().geId(); i < legs.size(); i++) {
+        for (int i = currentPosition.getLeg().getId(); i < legs.size(); i++) {
             Leg currentLeg = legs.get(i);
-            excess = distance > currentLeg.getLength() ? distanceFromStart - currentLeg.getLength() : 0.0;
+            excess = distanceFromStart > currentLeg.getLength() ? distanceFromStart - currentLeg.getLength() : 0.0;
 
             if (Double.doubleToRawLongBits(excess) == 0) {
-                curentPosition.setDistanceFrom(distanceFromStart);
-                currentPostion.setLeg(currentLeg);
-                Point
+                currentPosition.setDistanceFromStart(distanceFromStart);
+                currentPosition.setLeg(currentLeg);
+                // @TODO: implement the new position calculation method
+                Point newPosition = null;
+                currentPosition.setPosition(newPosition);
+                return;
             }
             distanceFromStart = excess;
         }
@@ -96,6 +141,12 @@ public class LocationSimulator implements Runnable {
     // Position running location at start of path
     public void setStartPosition() {
         currentPosition = new PositionInfo();
-        currentPosition.
+        currentPosition.setRunningId(runningId);
+        Leg leg = legs.get(0);
+        currentPosition.setLeg(leg);
+        currentPosition.setPosition(leg.getStartPosition());
+        currentPosition.setDistanceFromStart(0.0);
     }
+
+
 }

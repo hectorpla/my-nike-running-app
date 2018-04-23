@@ -1,5 +1,7 @@
 package demo.model;
 
+import lombok.Data;
+
 /**
  * Created by hectorlueng on 4/16/18.
  */
@@ -15,5 +17,6 @@ public class GpsSimulatorRequest {
     private RunnerStatus runnerStatus = RunnerStatus.NONE;
     private String polyline;
     private MedicalInfo medicalInfo;
+
 
 }
