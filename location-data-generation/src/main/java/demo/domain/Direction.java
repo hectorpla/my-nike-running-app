@@ -12,5 +12,9 @@ public class Direction {
     private String toAddress;
     private String polyline; // compressed representation?
 
-
+    public Direction(String fromAddress, String toAddress, String polyline) {
+        this.fromAddress = fromAddress;
+        this.toAddress = toAddress;
+        this.polyline = polyline;
+    }
 }
