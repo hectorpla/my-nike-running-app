@@ -1,19 +1,16 @@
 package demo.service.impl;
 
-import com.google.maps.GeoApiContext;
 import demo.domain.Direction;
 import demo.domain.Location;
 import demo.domain.LocationRepository;
-import demo.domain.PolyLineDirection;
 import demo.service.LocationDataGenerationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by hectorlueng on 5/5/18.
@@ -56,19 +53,22 @@ public class LocationDataGenerationServiceImpl implements LocationDataGeneration
 
         url = url.replaceAll(" ", "%20");
 
-//        try {
-//            url = URLEncoder.encode(url, "UTF-8");
-            System.out.print(url);
+        try {
+            System.out.println(url);
 
             RestTemplate restTemplate = new RestTemplate();
-            PolyLineDirection polyLineDirection =
-                    restTemplate.getForObject(url, PolyLineDirection.class);
+            HashMap direction =
+                    restTemplate.getForObject(url, HashMap.class);
 
-            
+//            System.out.println(polyLineDirection);
+            ArrayList routes = (ArrayList) direction.get("routes");
+            HashMap route = (HashMap) routes.get(0);
+            String polyline = (String) ((HashMap) route.get("overview_polyline")).get("points");
+            System.out.println(polyline);
 
-            return new Direction(fromAddress, toAddress, polyLineDirection.getPolyLine());
-//        } catch (UnsupportedEncodingException e) {
-//            return null;
-//        }
+            return new Direction(fromAddress, toAddress, polyline);
+        } catch (IndexOutOfBoundsException e) {
+            return null;
+        }
     }
 }
