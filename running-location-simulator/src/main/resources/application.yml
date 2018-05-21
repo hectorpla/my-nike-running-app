@@ -1,0 +1,12 @@
+server:
+  port: 9005
+spring:
+  application:
+    name: running-location-simulator
+
+com:
+  zhnpl:
+    running:
+      location:
+        distribution:
+          http://localhost:9006

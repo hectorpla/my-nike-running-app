@@ -1,6 +1,9 @@
 package demo.task;
 
 import demo.model.*;
+import lombok.Getter;
+import lombok.Setter;
+import demo.service.PositionService;
 
 import java.util.Date;
 import java.util.List;
@@ -10,6 +13,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Created by hectorlueng on 4/16/18.
  */
 public class LocationSimulator implements Runnable {
+
+    @Setter
+    private PositionService positionService;
+
+    @Getter
+    @Setter
     private long id;
 
     private AtomicBoolean cancel = new AtomicBoolean();
@@ -22,6 +31,7 @@ public class LocationSimulator implements Runnable {
 
     private PositionInfo positionInfo;
 
+    @Setter
     private List<Leg> legs;
     private RunnerStatus runnerStatus = RunnerStatus.NONE;
     private String  runningId;
@@ -31,6 +41,8 @@ public class LocationSimulator implements Runnable {
 
     private MedicalInfo medicalInfo;
 
+    @Getter
+    @Setter
     private PositionInfo currentPosition;
 
     public LocationSimulator(GpsSimulatorRequest gpsSimulatorRequest) {
@@ -43,10 +55,6 @@ public class LocationSimulator implements Runnable {
         this.runnerStatus = gpsSimulatorRequest.getRunnerStatus();
         this.medicalInfo = gpsSimulatorRequest.getMedicalInfo();
 
-    }
-
-    public void setSpeed(double speed) {
-        this.speedInMps = speed;
     }
 
     @Override
@@ -68,6 +76,10 @@ public class LocationSimulator implements Runnable {
                    currentPosition.setSpeed(0.0);
                }
 
+               if (this.secondsToError > 0 && startTime - executionStartTime
+                       .getTime() >= this.secondsToError * 1000) {
+                   this.runnerStatus = RunnerStatus.SUPPLY_NOW;
+               }
                currentPosition.setRunnerStatus(runnerStatus);
 
                final MedicalInfo medicalInfoToUse;
@@ -92,8 +104,10 @@ public class LocationSimulator implements Runnable {
                                this.currentPosition.getLeg().getHeading(),
                                medicalInfoToUse);
 
-               // send current position to distribution service vis REST API
-               // @TODO: implement PositionInfo service
+               // send current position to distribution demo.service vis REST API
+               // implement PositionInfo demo.service
+               positionService.processPositionInfo(id, currentPosition,
+                       this.exportPositionsToMessaging);
 
                this.sleep(startTime);
            }
@@ -148,5 +162,13 @@ public class LocationSimulator implements Runnable {
         currentPosition.setDistanceFromStart(0.0);
     }
 
+    public void setSpeed(double speed) {
+        this.speedInMps = speed;
+    }
 
+    public double getSpeed() { return this.speedInMps; }
+
+    public void cancel() {
+        cancel.set(true);
+    }
 }

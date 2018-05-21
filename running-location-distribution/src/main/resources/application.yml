@@ -1,0 +1,10 @@
+server:
+  port: 90006
+
+spring:
+  application:
+    name: running-location-distribution
+  cloud:
+    stream:
+      bindings:
+        ouput: locations
