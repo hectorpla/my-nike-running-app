@@ -1,5 +1,5 @@
 rabbitmq:
   image: rabbitmq:3.6.1-management
   ports:
-    - "6572:6572"
+    - "5672:5672"
     - "15672:15672"

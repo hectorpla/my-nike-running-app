@@ -76,10 +76,12 @@ public class LocationSimulator implements Runnable {
                    currentPosition.setSpeed(0.0);
                }
 
-               if (this.secondsToError > 0 && startTime - executionStartTime
-                       .getTime() >= this.secondsToError * 1000) {
-                   this.runnerStatus = RunnerStatus.SUPPLY_NOW;
-               }
+               // TODO: implement this state change logic
+//               if (this.secondsToError > 0 && startTime - executionStartTime
+//                       .getTime() >= this.secondsToError * 1000) {
+//                   this.runnerStatus = RunnerStatus.SUPPLY_NOW;
+//               }
+
                currentPosition.setRunnerStatus(runnerStatus);
 
                final MedicalInfo medicalInfoToUse;
