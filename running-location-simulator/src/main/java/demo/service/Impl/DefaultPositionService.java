@@ -25,14 +25,16 @@ public class DefaultPositionService implements PositionService {
     @Value("${com.zhpnl.running.location.distribution}")
     private String runningLocationDistribution;
 
-    @HystrixCommand(fallbackMethod = "processPositionFallback")
+//    @HystrixCommand(fallbackMethod = "processPositionFallback")
     @Override
     public void processPositionInfo(long id, CurrentPosition currentPosition, boolean sendPositionToDistributionService) {
         if (sendPositionToDistributionService) {
-            log.info(String.format("Thread %d Simulator is calling distribution REST API"),
-                    Thread.currentThread().getId());
-            this.restTemplate.postForLocation(runningLocationDistribution + "/api/locations",
-                    currentPosition);
+            log.info(String.format(
+                    "Thread %d Simulator is calling distribution REST API", Thread.currentThread().getId())
+            );
+            // TODO: send position to distribution service
+//            this.restTemplate.postForLocation(runningLocationDistribution + "/api/locations",
+//                    currentPosition);
         }
     }
 

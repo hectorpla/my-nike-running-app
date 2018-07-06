@@ -15,9 +15,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  */
 
 @SpringBootApplication
-@EnableScheduling
-@EnableDiscoveryClient
-@EnableCircuitBreaker
+//@EnableScheduling
+//@EnableDiscoveryClient
+//@EnableCircuitBreaker
 public class SimulatorServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(SimulatorServiceApplication.class, args);

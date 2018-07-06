@@ -14,7 +14,9 @@ public class Leg {
     private double length;
     private double heading;
 
-    public Leg() {
+    public Leg() {}
 
+    public String toString() {
+        return String.format("leg{%s, %s}", startPosition, endPosition);
     }
 }

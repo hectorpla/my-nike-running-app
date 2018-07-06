@@ -13,4 +13,8 @@ import lombok.Data;
 public class Point {
     private Double latitude;
     private Double longitude;
+
+    public String toString() {
+        return  String.format("(%.2f, %.2f)", latitude, longitude);
+    }
 }

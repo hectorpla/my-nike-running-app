@@ -1,9 +1,11 @@
 package demo.task;
 
 import demo.model.*;
+import demo.support.NavUtils;
 import lombok.Getter;
 import lombok.Setter;
 import demo.service.PositionService;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
 import java.util.List;
@@ -12,6 +14,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Created by hectorlueng on 4/16/18.
  */
+
+@Slf4j
 public class LocationSimulator implements Runnable {
 
     @Setter
@@ -29,21 +33,20 @@ public class LocationSimulator implements Runnable {
     private boolean exportPositionsToMessaging = true;
     private Integer reportInterval = 500;
 
-    private PositionInfo positionInfo;
+    @Getter
+    @Setter
+    private PositionInfo currentPosition = null;
 
     @Setter
     private List<Leg> legs;
     private RunnerStatus runnerStatus = RunnerStatus.NONE;
-    private String  runningId;
+    private String runningId;
 
+    @Setter
     private Point startPoint;
     private Date executionStartTime;
 
     private MedicalInfo medicalInfo;
-
-    @Getter
-    @Setter
-    private PositionInfo currentPosition;
 
     public LocationSimulator(GpsSimulatorRequest gpsSimulatorRequest) {
         this.shouldMove = gpsSimulatorRequest.isMove();
@@ -67,6 +70,7 @@ public class LocationSimulator implements Runnable {
            }
 
            while (!Thread.interrupted()) {
+               log.info(String.format("%d run: ", Thread.currentThread().getId()) + this.currentPosition.toString());
                long startTime = new Date().getTime();
 
                if (shouldMove) {
@@ -97,14 +101,17 @@ public class LocationSimulator implements Runnable {
                        break;
                }
 
-               final CurrentPosition currentPosition =
-                       new CurrentPosition(this.currentPosition.getRunningId(),
-                               new Point(this.currentPosition.getPosition().getLatitude(),
-                                       this.currentPosition.getPosition().getLongitude()),
-                               this.currentPosition.getRunnerStatus(),
-                               this.currentPosition.getSpeed(),
-                               this.currentPosition.getLeg().getHeading(),
-                               medicalInfoToUse);
+               final CurrentPosition currentPosition = new CurrentPosition(
+                       this.currentPosition.getRunningId(),
+                       new Point(
+                               this.currentPosition.getPosition().getLatitude(),
+                               this.currentPosition.getPosition().getLongitude()
+                       ),
+                       this.currentPosition.getRunnerStatus(),
+                       this.currentPosition.getSpeed(),
+                       this.currentPosition.getLeg().getHeading(),
+                       medicalInfoToUse
+               );
 
                // send current position to distribution demo.service vis REST API
                // implement PositionInfo demo.service
@@ -143,14 +150,20 @@ public class LocationSimulator implements Runnable {
             if (Double.doubleToRawLongBits(excess) == 0) {
                 currentPosition.setDistanceFromStart(distanceFromStart);
                 currentPosition.setLeg(currentLeg);
-                // @TODO: implement the new position calculation method
-                Point newPosition = null;
+
+                Point newPosition = NavUtils.getPosition(
+                        currentLeg.getStartPosition(),
+                        distanceFromStart,
+                        currentLeg.getHeading()
+                );
+
                 currentPosition.setPosition(newPosition);
                 return;
             }
             distanceFromStart = excess;
         }
 
+        // start over
         setStartPosition();
     }
 

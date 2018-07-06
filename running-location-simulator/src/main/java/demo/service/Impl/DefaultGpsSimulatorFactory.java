@@ -34,7 +34,7 @@ public class DefaultGpsSimulatorFactory implements GpsSimulatorFactory {
         locationSimulator.setId(this.instanceCounter.incrementAndGet());
 
         final List<Point> points = NavUtils.decodePolyline(gpsSimulatorRequest.getPolyline());
-        locationSimulator.setStartPosition(); // points.iterator().next()
+        locationSimulator.setStartPoint(points.iterator().next());
 
         return prepareGpsSimulator(locationSimulator, points);
     }
@@ -44,6 +44,7 @@ public class DefaultGpsSimulatorFactory implements GpsSimulatorFactory {
         locationSimulator.setCurrentPosition(null);
 
         final List<Leg> legs = createLegs(points);
+//        System.out.println(legs);
 
         locationSimulator.setLegs(legs);
         locationSimulator.setStartPosition();

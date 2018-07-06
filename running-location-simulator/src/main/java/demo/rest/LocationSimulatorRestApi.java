@@ -39,10 +39,13 @@ public class LocationSimulatorRestApi {
     @RequestMapping("/simulation")
     public List<LocationSimulatorInstance> simulation() {
         final SimulatorInitLocations fixture = this.pathService.loadSimulatorInitLocations();
+        System.out.println("++++simulation request+++++");
+        System.out.println(fixture);
 
         final List<LocationSimulatorInstance> instances = new ArrayList<>();
 
         for (GpsSimulatorRequest gpsSimulatorRequest : fixture.getGpsSimulatorRequests()) {
+            System.out.println(gpsSimulatorRequest.getPolyline());
             final LocationSimulator locationSimulator =
                     gpsSimulatorFactory.prepareGpsSimulator(gpsSimulatorRequest);
 
@@ -55,6 +58,7 @@ public class LocationSimulatorRestApi {
         return instances;
     }
 
+    @RequestMapping("/cancel")
     public int cancel() {
         int numberOfCancelledTasks = 0;
 
@@ -62,6 +66,7 @@ public class LocationSimulatorRestApi {
             LocationSimulatorInstance instance = entry.getValue();
             instance.getLocationSimulator().cancel();
             boolean wasCancelled = instance.getLocationSimulatorTask().cancel(true); // TODO: true？
+            // TODO: bug, not canceled
             if (wasCancelled) {
                 numberOfCancelledTasks++;
             }

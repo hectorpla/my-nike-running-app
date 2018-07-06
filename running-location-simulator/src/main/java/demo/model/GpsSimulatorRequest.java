@@ -18,5 +18,7 @@ public class GpsSimulatorRequest {
     private String polyline;
     private MedicalInfo medicalInfo;
 
-
+    public String toString() {
+        return  String.format("Request: ID %s", runningId);
+    }
 }
