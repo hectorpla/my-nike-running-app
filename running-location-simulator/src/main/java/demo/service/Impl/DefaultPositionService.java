@@ -19,22 +19,26 @@ public class DefaultPositionService implements PositionService {
 
 //    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPositionService.class);
 
-    @Autowired
-    private RestTemplate restTemplate;
+//    @Autowired
+    private RestTemplate restTemplate = new RestTemplate();
 
     @Value("${com.zhpnl.running.location.distribution}")
     private String runningLocationDistribution;
 
 //    @HystrixCommand(fallbackMethod = "processPositionFallback")
     @Override
-    public void processPositionInfo(long id, CurrentPosition currentPosition, boolean sendPositionToDistributionService) {
+    public void processPositionInfo(long id, CurrentPosition currentPosition,
+                                    boolean sendPositionToDistributionService) {
         if (sendPositionToDistributionService) {
             log.info(String.format(
                     "Thread %d Simulator is calling distribution REST API", Thread.currentThread().getId())
             );
+
+            // refactor to connect to string cloud
+//            String runningLocationDistribution = "http://running-location-distribution";
             // TODO: send position to distribution service
-//            this.restTemplate.postForLocation(runningLocationDistribution + "/api/locations",
-//                    currentPosition);
+            this.restTemplate.postForLocation(runningLocationDistribution + "/api/locations",
+                    currentPosition);
         }
     }
 

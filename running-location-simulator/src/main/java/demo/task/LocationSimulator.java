@@ -183,7 +183,9 @@ public class LocationSimulator implements Runnable {
 
     public double getSpeed() { return this.speedInMps; }
 
-    public void cancel() {
+    public void cancel() { // TODO: why synchronized
+        // TODO all cancel calls are made by the same thread
+        log.debug(String.format("Task canceled by thread %d: cancel() called", Thread.currentThread().getId()));
         cancel.set(true);
     }
 }

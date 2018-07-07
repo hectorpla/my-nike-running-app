@@ -5,16 +5,14 @@ import demo.model.SimulatorInitLocations;
 import demo.service.PathService;
 import demo.task.LocationSimulator;
 import demo.task.LocationSimulatorInstance;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import demo.service.GpsSimulatorFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Future;
 
 /**
@@ -23,6 +21,7 @@ import java.util.concurrent.Future;
 
 @RestController
 @RequestMapping("/api")
+@Slf4j
 public class LocationSimulatorRestApi {
 
     @Autowired
@@ -39,8 +38,8 @@ public class LocationSimulatorRestApi {
     @RequestMapping("/simulation")
     public List<LocationSimulatorInstance> simulation() {
         final SimulatorInitLocations fixture = this.pathService.loadSimulatorInitLocations();
-        System.out.println("++++simulation request+++++");
-        System.out.println(fixture);
+        log.debug("++++simulation request+++++");
+        log.debug(fixture.toString());
 
         final List<LocationSimulatorInstance> instances = new ArrayList<>();
 
@@ -53,14 +52,17 @@ public class LocationSimulatorRestApi {
             final LocationSimulatorInstance instance = new LocationSimulatorInstance(
                     locationSimulator.getId(), locationSimulator, future);
             instances.add(instance);
+            taskFutures.put(instance.getInstanceId(), instance);
         }
 
         return instances;
     }
 
     @RequestMapping("/cancel")
-    public int cancel() {
+    public String cancel() {
         int numberOfCancelledTasks = 0;
+        int size = taskFutures.size();
+        List<Long> toRemove = new LinkedList<>();
 
         for (Map.Entry<Long, LocationSimulatorInstance> entry : taskFutures.entrySet()) {
             LocationSimulatorInstance instance = entry.getValue();
@@ -68,9 +70,18 @@ public class LocationSimulatorRestApi {
             boolean wasCancelled = instance.getLocationSimulatorTask().cancel(true); // TODO: true？
             // TODO: bug, not canceled
             if (wasCancelled) {
+                log.info(String.format("Thread %d canceled", Thread.currentThread().getId()));
                 numberOfCancelledTasks++;
+                toRemove.add(entry.getKey());
             }
         }
-        return numberOfCancelledTasks;
+
+        // remove the canceled instances from the map
+        for (Long key: toRemove) {
+            taskFutures.remove(key);
+        }
+
+        return "number of task canceled: " + numberOfCancelledTasks + ", left: " +
+                (size - numberOfCancelledTasks);
     }
 }

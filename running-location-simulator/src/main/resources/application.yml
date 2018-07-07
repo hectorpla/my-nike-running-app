@@ -1,5 +1,6 @@
 server:
   port: 9005
+
 spring:
   application:
     name: running-location-simulator
@@ -8,4 +9,4 @@ com:
   zhpnl:
     running:
       location:
-        distribution: http://localhost:9006
+        distribution: "http://localhost:9006"
