@@ -16,22 +16,22 @@ import java.io.IOException;
  * Created by hectorlueng on 5/14/18.
  */
 
-@MessageEndpoint
+//@MessageEndpoin
 @EnableBinding(Sink.class)
 @Slf4j
 public class RunningLocationUpdaterSink {
 
-    @Autowired
-    private SimpMessagingTemplate template;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+//    @Autowired
+//    private SimpMessagingTemplate template;
+//
+//    @Autowired
+//    private ObjectMapper objectMapper;
 
     @ServiceActivator(inputChannel = Sink.INPUT)
     public void updateLocation(String input) throws IOException {
         log.info("Location update in Updater: " + input);
 
-        CurrentPosition payload = this.objectMapper.readValue(input, CurrentPosition.class);
-        this.template.convertAndSend("/topic/locations", payload);
+//        CurrentPosition payload = this.objectMapper.readValue(input, CurrentPosition.class);
+//        this.template.convertAndSend("/topic/locations", payload);
     }
 }
