@@ -14,7 +14,6 @@
         <module>running-location-updater</module>
         <module>location-data-generation</module>
         <module>platform</module>
-        <module>test</module>
         <module>edging-service</module>
     </modules>
 

@@ -3,6 +3,7 @@ package demo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.MessageChannel;
@@ -25,6 +26,7 @@ public class RunnerPositionSource {
     private MessageChannel output;
 
     @RequestMapping(path = "/api/locations", method = RequestMethod.POST)
+    @Output(Source.OUTPUT) // otherwise declare queue named "output"
     public void locations(@RequestBody String positionInfo) {
         log.info("Receiving currentPosition from Simulator: " + positionInfo);
         this.output.send(MessageBuilder.withPayload(positionInfo).build());
